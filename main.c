@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define MAX_MOVES 100
+#define MAX_MOVES 1000
 
 // Variables globales pour la grille et les mouvements
 int** grid;
@@ -15,7 +15,7 @@ int move_stack_top = -1;
 
 int N; // Taille de la grille
 
-bool colors_enabled = true;
+bool colors_enabled = true; // Assurez-vous que cette variable est définie sur true
 
 // Prototypes des fonctions
 void play_game();
@@ -259,7 +259,6 @@ bool prompt_for_next_level(int current_level) {
     return (response == 'O' || response == 'o');
 }
 
-// Fonction principale du jeu
 void play_game() {
     int x, y, new_x, new_y;
     int chain_counter = 1;
@@ -273,6 +272,7 @@ void play_game() {
     memset(last_positions, -1, sizeof(last_positions));
 
     while (playing) {
+        colors_enabled = true; // s'assure que les couleurs sont activées
         display_controls(last_x, last_y, current_chain);
 
         if (!has_started) {
@@ -285,7 +285,7 @@ void play_game() {
 
             print_grid();
 
-            printf("Entrez une case de départ pour commencer une nouvelle chaine sur un 'x' (x y) : ");
+            printf("Entrez une case de depart pour commencer une nouvelle chaine sur un 'x' (x y) : ");
             if (scanf("%d %d", &x, &y) != 2) {
                 printf("Entrée invalide. Veuillez entrer deux entiers.\n");
                 while (getchar() != '\n'); // Vider le buffer d'entrée
@@ -304,7 +304,7 @@ void play_game() {
                 last_positions[current_chain][1] = last_y;
                 has_started = true;
             } else {
-                printf("Mouvement invalide. Veuillez réessayer.\n");
+                printf("Mouvement invalide. Veuillez sélectionner un 'x'.\n");
                 continue;
             }
         } else {
@@ -312,7 +312,11 @@ void play_game() {
 
             char move;
             printf("Entrez votre mouvement (N/S/E/O) : ");
-            scanf(" %c", &move);
+            if (scanf(" %c", &move) != 1) {
+                printf("Entrée invalide. Veuillez entrer une direction (N/S/E/O).\n");
+                while (getchar() != '\n'); // Vider le buffer d'entrée
+                continue;
+            }
 
             switch (move) {
                 case 'N':
@@ -329,31 +333,24 @@ void play_game() {
                     new_x = last_x; new_y = last_y - 1; break;
                 case 'B':
                 case 'b':
-                    if (move_stack_top >= 0) {
-                        // Récupérer la dernière position à partir de la pile
+                    if (grid[last_x][last_y] == 0) {
+                        printf("Impossible d'annuler un mouvement sur un 'x'.\n");
+                    } else if (move_stack_top >= 0) {
                         int popped_x = move_stack[move_stack_top][0];
                         int popped_y = move_stack[move_stack_top][1];
-
-                        // Mettre à jour la pile de mouvements
                         move_stack_top--;
-
-                        // Annuler le mouvement dans chain_grid
-                        chain_grid[popped_x][popped_y] = 0; // Enlever la chaîne de la dernière position
-
-                        // Réinitialiser last_x et last_y
+                        chain_grid[popped_x][popped_y] = 0;
                         if (move_stack_top >= 0) {
                             last_x = move_stack[move_stack_top][0];
                             last_y = move_stack[move_stack_top][1];
                         } else {
-                            // Si la pile est vide, réinitialiser last_x et last_y
-                            last_x = start_x; // Retourner à la position de départ
-                            last_y = start_y; // Retourner à la position de départ
-                            has_started = false; // Peut-être réinitialiser le niveau
+                            last_x = start_x;
+                            last_y = start_y;
                         }
                     } else {
                         printf("Aucun mouvement précédent à annuler.\n");
                     }
-                continue;
+                    continue;
                 case 'R':
                 case 'r':
                     erase_chain(current_chain); last_x = start_x; last_y = start_y; continue;
@@ -369,31 +366,26 @@ void play_game() {
                         continue;
                     }
 
-                    // Vérifiez si la case sélectionnée est un 'x' ou déjà occupée par une chaîne
                     if (is_within_bounds(x, y) && (grid[x][y] == 0 || chain_grid[x][y] > 0)) {
-                        // Si c'est une chaîne existante, récupérez la position précédente
                         if (chain_grid[x][y] > 0) {
-                            // Mettez à jour current_chain avec la chaîne existante
                             current_chain = chain_grid[x][y];
-                            // Reprenez la dernière position de cette chaîne
-                            last_x = last_positions[current_chain][0];
-                            last_y = last_positions[current_chain][1];
-                            // Affichez la position reprise
-                            printf("Vous avez repris la chaîne %d à la position (%d, %d).\n", current_chain, last_x + 1, last_y + 1);
-                        } else {
-                            // Si c'est une case 'x', démarrez une nouvelle chaîne
-                            current_chain = chain_counter++;
-                            chain_grid[x][y] = current_chain; // Colorier la case sélectionnée
                             last_x = x;
                             last_y = y;
+                            start_x = x;
+                            start_y = y;
+                        } else {
+                            current_chain = chain_counter++;
+                            chain_grid[x][y] = current_chain;
+                            last_x = x;
+                            last_y = y;
+                            start_x = x;
+                            start_y = y;
                             push_move(x, y);
-                            last_positions[current_chain][0] = last_x;
-                            last_positions[current_chain][1] = last_y;
                         }
                     } else {
                         printf("Case invalide. Veuillez sélectionner un 'x'\n");
                     }
-                continue;
+                    continue;
                 default:
                     printf("Mouvement invalide.\n");
                     continue;
@@ -411,22 +403,12 @@ void play_game() {
                     if (prompt_for_next_level(current_level)) {
                         current_level++;
                         has_started = false;
-
-                        // Charger le nouveau niveau
-                        char filename[100];
-                        snprintf(filename, sizeof(filename), "../Level/level%d.txt", current_level);
-                        if (!load_grid(filename)) {
-                            printf("Erreur lors du chargement du niveau %d\n", current_level);
-                            playing = false; // Arrêtez le jeu ou continuez avec le niveau actuel
-                            break; // Ou continuez
-                        }
-                        print_grid(); // Afficher la nouvelle grille après chargement
                     } else {
-                        playing = false; // Arrêter le jeu si l'utilisateur ne veut pas continuer
+                        playing = false;
                     }
-                } else {
-                    printf("Mouvement invalide.\n");
                 }
+            } else {
+                printf("Mouvement invalide.\n");
             }
         }
     }
