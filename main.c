@@ -391,7 +391,7 @@ void play_game() {
                             last_positions[current_chain][1] = last_y;
                         }
                     } else {
-                        printf("Case invalide. Veuillez sélectionner un 'x' ou une case déjà occupée.\n");
+                        printf("Case invalide. Veuillez sélectionner un 'x'\n");
                     }
                 continue;
                 default:
