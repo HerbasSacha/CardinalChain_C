@@ -5,10 +5,10 @@
 
 #define MAX_MOVES 100
 
-// Déclaration des variables globales
+// Variables globales pour la grille et les mouvements
 int** grid;
 int** chain_grid;
-int last_positions[MAX_MOVES][2];  // Pour stocker les dernières positions des chaînes
+int last_positions[MAX_MOVES][2];  // Dernières positions des chaînes
 
 int move_stack[MAX_MOVES][2]; // Pour annuler les mouvements
 int move_stack_top = -1;
@@ -17,7 +17,7 @@ int N; // Taille de la grille
 
 bool colors_enabled = true;
 
-// Déclaration des fonctions
+// Prototypes des fonctions
 void play_game();
 bool load_grid(const char* filename);
 void print_grid();
@@ -33,7 +33,7 @@ bool prompt_for_next_level(int current_level);
 void allocate_grids(int size);
 void free_grids();
 
-// Alloue la mémoire pour les grilles
+// Fonction pour allouer la mémoire pour les grilles
 void allocate_grids(int size) {
     N = size;
     grid = malloc(N * sizeof(int*));
@@ -46,7 +46,7 @@ void allocate_grids(int size) {
     }
 }
 
-// Libère la mémoire allouée pour les grilles
+// Fonction pour libérer la mémoire allouée pour les grilles
 void free_grids() {
     for (int i = 0; i < N; i++) {
         free(grid[i]);
@@ -56,7 +56,7 @@ void free_grids() {
     free(chain_grid);
 }
 
-// Empile un mouvement
+// Fonction pour empiler un mouvement
 void push_move(int x, int y) {
     if (move_stack_top < MAX_MOVES - 1) {
         move_stack_top++;
@@ -65,7 +65,7 @@ void push_move(int x, int y) {
     }
 }
 
-// Dépile un mouvement
+// Fonction pour dépiler un mouvement
 void pop_move(int *x, int *y) {
     if (move_stack_top >= 0) {
         *x = move_stack[move_stack_top][0];
@@ -74,12 +74,12 @@ void pop_move(int *x, int *y) {
     }
 }
 
-// Vérifie si les coordonnées sont dans les limites de la grille
+// Fonction pour vérifier si les coordonnées sont dans les limites de la grille
 bool is_within_bounds(int x, int y) {
     return x >= 0 && x < N && y >= 0 && y < N;
 }
 
-// Vérifie si un mouvement est valide
+// Fonction pour vérifier si un mouvement est valide
 bool is_valid_move(int start_x, int start_y, int dest_x, int dest_y) {
     if ((start_x == dest_x && start_y != dest_y) || (start_x != dest_x && start_y == dest_y)) {
         if (is_within_bounds(dest_x, dest_y)) {
@@ -93,7 +93,7 @@ bool is_valid_move(int start_x, int start_y, int dest_x, int dest_y) {
     return false;
 }
 
-// Affiche une valeur colorée en fonction du numéro de chaîne
+// Fonction pour afficher une valeur colorée en fonction du numéro de chaîne
 void print_colored(int chain_number, int value) {
     if (!colors_enabled) {
         printf(" %d ", value);
@@ -119,7 +119,7 @@ void print_colored(int chain_number, int value) {
     }
 }
 
-// Affiche un 'x' coloré en fonction du numéro de chaîne
+// Fonction pour afficher un 'x' coloré en fonction du numéro de chaîne
 void print_blocked(int chain_number) {
     if (!colors_enabled) {
         printf(" x ");
@@ -145,7 +145,7 @@ void print_blocked(int chain_number) {
     }
 }
 
-// Affiche la grille de jeu
+// Fonction pour afficher la grille de jeu
 void print_grid() {
     printf("Grille de jeu :\n");
     for (int i = 0; i < N; i++) {
@@ -170,7 +170,7 @@ void print_grid() {
     }
 }
 
-// Affiche les contrôles du jeu
+// Fonction pour afficher les contrôles du jeu
 void display_controls(int last_x, int last_y, int current_chain) {
     const char* chain_color;
     switch (current_chain) {
@@ -189,7 +189,7 @@ void display_controls(int last_x, int last_y, int current_chain) {
     printf("Selectionner une autre chaine (C).\n");
 }
 
-// Efface une chaîne de la grille
+// Fonction pour effacer une chaîne de la grille
 void erase_chain(int chain_id) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
@@ -200,7 +200,7 @@ void erase_chain(int chain_id) {
     }
 }
 
-// Réinitialise le niveau
+// Fonction pour réinitialiser le niveau
 void reset_level() {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
@@ -209,7 +209,7 @@ void reset_level() {
     }
 }
 
-// Vérifie si le joueur a gagné
+// Fonction pour vérifier si le joueur a gagné
 bool check_victory() {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
@@ -221,7 +221,7 @@ bool check_victory() {
     return true;
 }
 
-// Charge une grille à partir d'un fichier
+// Fonction pour charger une grille à partir d'un fichier
 bool load_grid(const char* filename) {
     printf("Tentative d'ouverture du fichier: %s\n", filename);
     FILE *file = fopen(filename, "r");
@@ -247,7 +247,7 @@ bool load_grid(const char* filename) {
     return true;
 }
 
-// Affiche un message de félicitations pour le niveau terminé et demande si l'utilisateur veut continuer
+// Fonction pour afficher un message de félicitations pour le niveau terminé
 bool prompt_for_next_level(int current_level) {
     printf("Bravo ! Vous avez terminé le niveau %d.\n", current_level);
     print_grid(); // Afficher la grille complétée
@@ -288,7 +288,7 @@ void play_game() {
             printf("Entrez une case de départ pour commencer une nouvelle chaine sur un 'x' (x y) : ");
             if (scanf("%d %d", &x, &y) != 2) {
                 printf("Entrée invalide. Veuillez entrer deux entiers.\n");
-                while (getchar() != '\n'); // Clear the input buffer
+                while (getchar() != '\n'); // Vider le buffer d'entrée
                 continue;
             }
 
@@ -365,7 +365,7 @@ void play_game() {
                     printf("Selectionnez une case pour changer la chaine (x y) : ");
                     if (scanf("%d %d", &x, &y) != 2) {
                         printf("Entrée invalide. Veuillez entrer deux chiffres.\n");
-                        while (getchar() != '\n'); // Clear the input buffer
+                        while (getchar() != '\n'); // Vider le buffer d'entrée
                         continue;
                     }
 
