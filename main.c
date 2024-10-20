@@ -272,7 +272,7 @@ void play_game() {
     bool has_started = false;
     int last_x = 0, last_y = 0;
     int start_x = -1, start_y = -1;
-    int current_level = 22;
+    int current_level = 1;
 
     memset(last_positions, -1, sizeof(last_positions));
 
