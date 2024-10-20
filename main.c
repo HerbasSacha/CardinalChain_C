@@ -103,20 +103,22 @@ void print_colored(int chain_number, int value) {
     switch (chain_number) {
         case 1:
             printf("\033[34m %d \033[0m", value); // Bleu
-            break;
+        break;
         case 2:
             printf("\033[31m %d \033[0m", value); // Rouge
-            break;
+        break;
         case 3:
             printf("\033[32m %d \033[0m", value); // Vert
-            break;
+        break;
         case 4:
             printf("\033[33m %d \033[0m", value); // Jaune
-            break;
+        break;
         default:
             printf(" %d ", value); // Par défaut
-            break;
+        break;
     }
+    // Réinitialiser les séquences d'échappement
+    printf("\033[0m");
 }
 
 // Fonction pour afficher un 'x' coloré en fonction du numéro de chaîne
@@ -146,7 +148,9 @@ void print_blocked(int chain_number) {
 }
 
 // Fonction pour afficher la grille de jeu
+// Fonction pour afficher la grille de jeu
 void print_grid() {
+    colors_enabled = true; // s'assure que les couleurs sont activées
     printf("Grille de jeu :\n");
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
@@ -190,10 +194,11 @@ void display_controls(int last_x, int last_y, int current_chain) {
 }
 
 // Fonction pour effacer une chaîne de la grille
+// Fonction pour effacer une chaîne de la grille
 void erase_chain(int chain_id) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            if (chain_grid[i][j] == chain_id && grid[i][j] != -1) {
+            if (chain_grid[i][j] == chain_id && grid[i][j] != -1 && grid[i][j] != 0) {
                 chain_grid[i][j] = 0;
             }
         }
@@ -267,7 +272,7 @@ void play_game() {
     bool has_started = false;
     int last_x = 0, last_y = 0;
     int start_x = -1, start_y = -1;
-    int current_level = 1;
+    int current_level = 22;
 
     memset(last_positions, -1, sizeof(last_positions));
 
@@ -359,33 +364,32 @@ void play_game() {
                     reset_level(); has_started = false; continue;
                 case 'C':
                 case 'c':
-                    printf("Selectionnez une case pour changer la chaine (x y) : ");
-                    if (scanf("%d %d", &x, &y) != 2) {
-                        printf("Entrée invalide. Veuillez entrer deux chiffres.\n");
-                        while (getchar() != '\n'); // Vider le buffer d'entrée
-                        continue;
-                    }
+                        printf("Selectionnez une case pour changer la chaine (x y) : ");
+                scanf("%d %d", &x, &y);
 
-                    if (is_within_bounds(x, y) && (grid[x][y] == 0 || chain_grid[x][y] > 0)) {
-                        if (chain_grid[x][y] > 0) {
-                            current_chain = chain_grid[x][y];
-                            last_x = x;
-                            last_y = y;
-                            start_x = x;
-                            start_y = y;
-                        } else {
-                            current_chain = chain_counter++;
-                            chain_grid[x][y] = current_chain;
-                            last_x = x;
-                            last_y = y;
-                            start_x = x;
-                            start_y = y;
-                            push_move(x, y);
-                        }
+                if (is_within_bounds(x, y) && (grid[x][y] == 0 || chain_grid[x][y] > 0)) {
+                    if (chain_grid[x][y] > 0) {
+                        // Mettez à jour current_chain avec la chaîne existante
+                        current_chain = chain_grid[x][y];
+                        // Derniere position de la chaine
+                        last_x = last_positions[current_chain][0];
+                        last_y = last_positions[current_chain][1];
+                        // Affichez la position reprise
+                        printf("Vous avez repris la chaîne %d à la position (%d, %d).\n", current_chain, last_x + 1, last_y + 1);
                     } else {
-                        printf("Case invalide. Veuillez sélectionner un 'x'\n");
+                        // Si c'est une case 'x', démarrez une nouvelle chaîne
+                        current_chain = chain_counter++;
+                        chain_grid[x][y] = current_chain;
+                        last_x = x;
+                        last_y = y;
+                        push_move(x, y);
+                        last_positions[current_chain][0] = last_x;
+                        last_positions[current_chain][1] = last_y;
                     }
-                    continue;
+                } else {
+                    printf("Case invalide. Veuillez sélectionner un 'x' ou une case déjà occupée.\n");
+                }
+                continue;
                 default:
                     printf("Mouvement invalide.\n");
                     continue;
