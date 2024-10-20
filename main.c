@@ -176,10 +176,10 @@ void print_grid() {
 void display_controls(int last_x, int last_y, int current_chain) {
     const char* chain_color;
     switch (current_chain) {
-        case 1: chain_color = "bleu"; break;
-        case 2: chain_color = "rouge"; break;
-        case 3: chain_color = "vert"; break;
-        case 4: chain_color = "jaune"; break;
+        case 1: chain_color = "\033[34mBLEU\033[0m"; break;
+        case 2: chain_color = "\033[31mROUGE\033[0m"; break;
+        case 3: chain_color = "\033[32mVERT\033[0m"; break;
+        case 4: chain_color = "\033[33mJAUNE\033[0m"; break;
         default: chain_color = "aucun"; break;
     }
 
@@ -188,7 +188,7 @@ void display_controls(int last_x, int last_y, int current_chain) {
     printf("Annuler le mouvement precedent (B).\n");
     printf("Effacer la chaine (R).\n");
     printf("Redemarrer le niveau (X).\n");
-    printf("Selectionner une autre chaine (C).\n");
+    printf("Selectionner une autre chaine (C).\n \n ");
 }
 
 //   effacer une chaîne de la grille
